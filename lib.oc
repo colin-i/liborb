@@ -1,0 +1,35 @@
+
+format elfobj64
+
+const NULL=0
+
+importx "ruby_init_stack" ruby_init_stack
+importx "ruby_init" ruby_init
+importx "ruby_options" ruby_options
+importx "ruby_cleanup" ruby_cleanup
+
+functionx orb_init()
+	svu variable_in_this_stack_frame
+	call ruby_init_stack(#variable_in_this_stack_frame) #needed since 3.4
+	call ruby_init() #needed anyway
+	#ruby_init_loadpath();//this is in prelude, but here can require default modules, like time, rubygems(but is with errors now)
+	# Force the prelude / builtins, require rubygems that will see require tty-prompt
+	valueu options#2;svu p_options^options
+	svu cursor;set cursor p_options
+	set cursor# (NULL)
+	incst cursor
+	set cursor# "-e;"
+	valueu node#1
+	set node ruby_options(2,options) #needed for require tty-prompt
+	#ruby_exec_node(node);ruby_exec_node(node);//this is ok, means ruby_exec_node is not also freeing
+	#this will load more modules here
+	#if (ruby_executable_node(node, &state)){
+	#	state = ruby_exec_node(node);
+	#}
+	#this will not work after first ruby_options
+	#char*options2[] = { NULL,"-eprint 'ok'" };node = ruby_options(2, options2);if (ruby_executable_node(node, &state)){state = ruby_exec_node(node);}
+end
+
+functionx orb_cleanup() #int ruby_cleanup(int), and int is a sysexit int (eval.c), then will be int main return (https://silverhammermba.github.io/emberb/examples/)
+	callret ruby_cleanup(0) #internal/interpreter.h . like in eval.c, calling ruby_ec_finalize,ruby_vm_destruct(also is doing some frees),and more functions than ruby_finalize
+end
