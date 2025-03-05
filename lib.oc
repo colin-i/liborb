@@ -39,7 +39,7 @@ functionx orb_cleanup() #int ruby_cleanup(int), and int is a sysexit int (eval.c
 	callret ruby_cleanup((no_error)) #internal/interpreter.h . like in eval.c, calling ruby_ec_finalize,ruby_vm_destruct(also is doing some frees),and more functions than ruby_finalize
 end
 
-importx "strlen" strlen
+importx "snprintf" snprintf
 importx "malloc" malloc
 importx "sprintf" sprintf
 importx "free" free
@@ -51,16 +51,19 @@ functionx orb_require(ss module)
 	#i have a hard time with rb_require tty-prompt
 	#and this is working only if was not already a first ruby_options,...
 	#char*options2[] = { NULL,"-erequire 'tty-prompt'" };node = ruby_options(2, options2);if (ruby_executable_node(node, &state)){state = ruby_exec_node(node);}
-	char format="require '%s'" #e third-party, altfel puneam load
-	valueu sz#1;set sz \.format-2
-	add sz strlen(module)
-	ss mem;set mem malloc(sz)
-	if mem!=(NULL)
-		datax state#1
-		call sprintf(mem,#format,module)
-		call rb_eval_string_protect(mem,#state)
-		call free(mem)
-		return state
+	char format="require '%s'" #e third-party, else was: load
+	datax sz#1
+	set sz snprintf((NULL),0,#format,module) #negative on error
+	if sz>0
+		add sz 1 #null end
+		ss mem;set mem malloc(sz)
+		if mem!=(NULL)
+			datax state#1
+			call sprintf(mem,#format,module)
+			call rb_eval_string_protect(mem,#state)
+			call free(mem)
+			return state
+		end
 	end
 	return ~no_error
 end
