@@ -51,12 +51,13 @@ functionx orb_require(ss module)
 	#i have a hard time with rb_require tty-prompt
 	#and this is working only if was not already a first ruby_options,...
 	#char*options2[] = { NULL,"-erequire 'tty-prompt'" };node = ruby_options(2, options2);if (ruby_executable_node(node, &state)){state = ruby_exec_node(node);}
-	char format="require '%s'" #e third-party, else was: load
+	char format="require '%s'" #is third-party, else was: load
 	datax sz#1
 	set sz snprintf((NULL),0,#format,module) #negative on error
 	if sz>0
-		add sz 1 #null end
-		ss mem;set mem malloc(sz)
+		valueu bigsize#1;set bigsize 1 #null end
+		add bigsize sz
+		ss mem;set mem malloc(bigsize)
 		if mem!=(NULL)
 			datax state#1
 			call sprintf(mem,#format,module)
