@@ -3,6 +3,10 @@ format elfobj64
 
 const NULL=0
 
+override include_sec 1
+
+include "orbs.h" "orbs.oh"
+
 importx "ruby_init_stack" ruby_init_stack
 importx "ruby_init" ruby_init
 importx "ruby_options" ruby_options
@@ -30,6 +34,33 @@ functionx orb_init()
 	#char*options2[] = { NULL,"-eprint 'ok'" };node = ruby_options(2, options2);if (ruby_executable_node(node, &state)){state = ruby_exec_node(node);}
 end
 
+#data
 functionx orb_cleanup() #int ruby_cleanup(int), and int is a sysexit int (eval.c), then will be int main return (https://silverhammermba.github.io/emberb/examples/)
-	callret ruby_cleanup(0) #internal/interpreter.h . like in eval.c, calling ruby_ec_finalize,ruby_vm_destruct(also is doing some frees),and more functions than ruby_finalize
+	callret ruby_cleanup((no_error)) #internal/interpreter.h . like in eval.c, calling ruby_ec_finalize,ruby_vm_destruct(also is doing some frees),and more functions than ruby_finalize
+end
+
+importx "strlen" strlen
+importx "malloc" malloc
+importx "sprintf" sprintf
+importx "free" free
+
+importx "rb_eval_string_protect" rb_eval_string_protect
+
+#data
+functionx orb_require(ss module)
+	#i have a hard time with rb_require tty-prompt
+	#and this is working only if was not already a first ruby_options,...
+	#char*options2[] = { NULL,"-erequire 'tty-prompt'" };node = ruby_options(2, options2);if (ruby_executable_node(node, &state)){state = ruby_exec_node(node);}
+	char format="require '%s'" #e third-party, altfel puneam load
+	valueu sz#1;set sz \.format-2
+	add sz strlen(module)
+	ss mem;set mem malloc(sz)
+	if mem!=(NULL)
+		datax state#1
+		call sprintf(mem,#format,module)
+		call rb_eval_string_protect(mem,#state)
+		call free(mem)
+		return state
+	end
+	return ~no_error
 end
