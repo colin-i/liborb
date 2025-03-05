@@ -39,4 +39,4 @@ ${proj}: ${core}.h
 clean:
 	rm -f lib.c lib.oc.log lib.oc.x ${proj} ${core}.h ${core}.ohi ${core}.ohi.x ${cores}.h ${cores}.ohi ${cores}.ohi.x
 
-.PHONY: clean
+.PHONY: all clean
