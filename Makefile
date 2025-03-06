@@ -48,8 +48,8 @@ ${proj}: lib.o ${exte}
 	$(CC) ${linkerflags} -shared $< -o $@ -L. -l:${exte} -Wl,--exclude-libs ${exte} #will not work with util.o instead of libexte.a, will be global
 
 clean:
-	rm -f lib.c lib.oc.log lib.oc.x
-	rm -f util.c util.oc.log util.oc.x
+	rm -f lib.c lib.oc.log lib.oc.x lib.o
+	rm -f util.c util.oc.log util.oc.x util.o
 	rm -f ${com}.h ${com}.ohi ${com}.ohi.x
 	rm -f ${cores}.h ${cores}.ohi ${cores}.ohi.x
 	rm -f ${core}.h ${core}.ohi ${core}.ohi.x

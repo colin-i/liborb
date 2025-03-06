@@ -13,8 +13,8 @@ functionx orb_init()
 	svu variable_in_this_stack_frame
 	call ruby_init_stack(#variable_in_this_stack_frame) #needed since 3.4
 	call ruby_init() #needed anyway
-	#ruby_init_loadpath();//this is in prelude, but here can require default modules, like time, rubygems(but is with errors now)
-	# Force the prelude / builtins, require rubygems that will see require tty-prompt
+	#ruby_init_loadpath();//this is in prelude, but here can require default modules, like time,rubygems(but is with errors now)
+	# Force the prelude / builtins, require rubygems that will see require tty-prompt,tty-color
 	valueu options#2;svu p_options^options
 	svu cursor;set cursor p_options
 	set cursor# (NULL)
@@ -29,6 +29,7 @@ functionx orb_init()
 	#}
 	#this will not work after first ruby_options
 	#char*options2[] = { NULL,"-eprint 'ok'" };node = ruby_options(2, options2);if (ruby_executable_node(node, &state)){state = ruby_exec_node(node);}
+	#rb_jump_tag(1) will backtrace and stop
 end
 
 #data
@@ -61,6 +62,14 @@ importx "rb_str_new_cstr" rb_str_new_cstr
 importx "rb_funcall" rb_funcall
 
 functionx orb_inst_call_arg(valueu inst,valueu id,ssu str)
-	valueu arg#1;set arg rb_str_new_cstr(str)
+	valueu arg#1;set arg rb_str_new_cstr(str) #https://docs.ruby-lang.org/capi/en/master/d8/d68/include_2ruby_2internal_2intern_2string_8h.html (doxygen,Files,...), no free(arg)
 	call rb_funcall(inst,id,1,arg)
+end
+
+importx "rb_string_value_cstr" rb_string_value_cstr
+
+#ssu
+functionx orb_inst_call_varg_str(valueu inst,valueu id,valueu varg)
+	ssu string;set string rb_funcall(inst,id,1,varg)
+	callret rb_string_value_cstr(#string) #free(this ret) is not required, and not possible, that's why &string? then value can be new allocated there maybe
 end
