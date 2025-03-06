@@ -1,10 +1,7 @@
 
 format elfobj64
 
-const NULL=0
-
-override include_sec 1
-
+include "common.h" "common.oh"
 include "orbs.h" "orbs.oh"
 
 importx "ruby_init_stack" ruby_init_stack
@@ -39,32 +36,29 @@ functionx orb_cleanup() #int ruby_cleanup(int), and int is a sysexit int (eval.c
 	callret ruby_cleanup((no_error)) #internal/interpreter.h . like in eval.c, calling ruby_ec_finalize,ruby_vm_destruct(also is doing some frees),and more functions than ruby_finalize
 end
 
-importx "snprintf" snprintf
-importx "malloc" malloc
-importx "sprintf" sprintf
 importx "free" free
 
 importx "rb_eval_string_protect" rb_eval_string_protect
 
+import "safe_input_string" safe_input_string
+
 #data
-functionx orb_require(ss module)
+functionx orb_require(ssu module)
 	#i have a hard time with rb_require tty-prompt
 	#and this is working only if was not already a first ruby_options,...
 	#char*options2[] = { NULL,"-erequire 'tty-prompt'" };node = ruby_options(2, options2);if (ruby_executable_node(node, &state)){state = ruby_exec_node(node);}
-	char format="require '%s'" #is third-party, else was: load
-	datax sz#1
-	set sz snprintf((NULL),0,#format,module) #negative on error
-	if sz>0
-		valueu bigsize#1;set bigsize 1 #null end
-		add bigsize sz
-		ss mem;set mem malloc(bigsize)
-		if mem!=(NULL)
-			datax state#1
-			call sprintf(mem,#format,module)
-			call rb_eval_string_protect(mem,#state)
-			call free(mem)
-			return state
-		end
+	ssu mem;set mem safe_input_string("require '%s'",module)  #is third-party, else was: load
+	if mem!=(NULL)
+		datax state#1
+		call rb_eval_string_protect(mem,#state)
+		call free(mem)
+		return state
 	end
 	return ~no_error
 end
+
+#value
+#functionx orb_inst_val(ssu)
+#end
+#functionx orb_inst_call_arg(valueu,valueu,ssu)
+#end

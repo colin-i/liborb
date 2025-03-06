@@ -1,1 +1,1 @@
-linkerflags=-g make
+linkerflags=-g make -j4

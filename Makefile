@@ -1,5 +1,4 @@
 
-
 ifndef OCOMP
 OCOMP=o
 endif
@@ -12,31 +11,48 @@ endif
 ifndef linkerflags
 linkerflags=-O3 -s
 endif
-OFLAGS=x_file 2
+ifndef compilerflags
+compilerflags=${linkerflags}
+endif
+OFLAGS=x_file 2 include_sec 1
 
 core=orb
 cores=${core}s
 proj=lib${core}.so
+com=common
+exte=libexte.a
 
-all: ${proj}
+all: ${proj} ${core}.h
+${core}.h: ${cores}.h
 
 %.ohi: %.oh
 	echo "format elfobj64" > $@
 	echo "orphan off" >> $@
-	echo "override include_sec 1" >> $@
 	cat $< >> $@
 %.h: %.ohi
 	${OCOMP} $< ${OFLAGS} logfile 0
 	${OCONV} $<.x
+%.o: %.oc
+	${OCOMP} $< ${OFLAGS}
+	${OCONV} $<.x
+	$(CC) -c -w -fPIC ${compilerflags} $*.c
+#-fPIC at launchpad bionic build
 
-${core}.h: ${cores}.h
-${proj}: ${core}.h
-	${OCOMP} lib.oc ${OFLAGS}
-	${OLINK} lib.oc.log
-	${OCONV} lib.oc.x
-	$(CC) ${linkerflags} -shared -w lib.c -o $@
+lib.o: ${com}.h ${cores}.h
+util.o: ${com}.h
+
+${exte}: util.o
+	$(AR) cr ${exte} $^
+${proj}: lib.o ${exte}
+	${OLINK} lib.oc.log util.oc.log
+	$(CC) ${linkerflags} -shared $< -o $@ -L. -l:${exte} -Wl,--exclude-libs ${exte} #will not work with util.o instead of libexte.a, will be global
 
 clean:
-	rm -f lib.c lib.oc.log lib.oc.x ${proj} ${core}.h ${core}.ohi ${core}.ohi.x ${cores}.h ${cores}.ohi ${cores}.ohi.x
+	rm -f lib.c lib.oc.log lib.oc.x
+	rm -f util.c util.oc.log util.oc.x
+	rm -f ${com}.h ${com}.ohi ${com}.ohi.x
+	rm -f ${cores}.h ${cores}.ohi ${cores}.ohi.x
+	rm -f ${core}.h ${core}.ohi ${core}.ohi.x
+	rm -f ${proj} ${exte}
 
 .PHONY: all clean

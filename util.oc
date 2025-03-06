@@ -1,0 +1,24 @@
+
+format elfobj64
+
+include "common.h" "common.oh"
+
+importx "snprintf" snprintf
+importx "malloc" malloc
+importx "sprintf" sprintf
+
+#mem
+function safe_input_string(ssu format,ssu string)
+	datax sz#1
+	set sz snprintf((NULL),0,format,string) #negative on error
+	if sz>0
+		valueu bigsize#1;set bigsize 1 #null end
+		add bigsize sz
+		ssu mem;set mem malloc(bigsize)
+		if mem!=(NULL)
+			call sprintf(mem,format,string)
+			return mem
+		end
+	end
+	return (NULL)
+end
