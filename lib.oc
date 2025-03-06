@@ -57,8 +57,10 @@ functionx orb_require(ssu module)
 	return ~no_error
 end
 
-#value
-#functionx orb_inst_val(ssu)
-#end
-#functionx orb_inst_call_arg(valueu,valueu,ssu)
-#end
+importx "rb_str_new_cstr" rb_str_new_cstr
+importx "rb_funcall" rb_funcall
+
+functionx orb_inst_call_arg(valueu inst,valueu id,ssu str)
+	valueu arg#1;set arg rb_str_new_cstr(str)
+	call rb_funcall(inst,id,1,arg)
+end
