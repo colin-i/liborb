@@ -44,11 +44,11 @@ importx "rb_eval_string_protect" rb_eval_string_protect
 import "safe_input_string" safe_input_string
 
 #data
-functionx orb_require(ssu module)
+functionx orb_require(ss module)
 	#i have a hard time with rb_require tty-prompt
 	#and this is working only if was not already a first ruby_options,...
 	#char*options2[] = { NULL,"-erequire 'tty-prompt'" };node = ruby_options(2, options2);if (ruby_executable_node(node, &state)){state = ruby_exec_node(node);}
-	ssu mem;set mem safe_input_string("require '%s'",module)  #is third-party, else was: load
+	ss mem;set mem safe_input_string("require '%s'",module)  #is third-party, else was: load
 	if mem!=(NULL)
 		datax state#1
 		call rb_eval_string_protect(mem,#state)
@@ -61,15 +61,15 @@ end
 importx "rb_str_new_cstr" rb_str_new_cstr
 importx "rb_funcall" rb_funcall
 
-functionx orb_inst_call_arg(valueu inst,valueu id,ssu str)
+functionx orb_inst_call_arg(valueu inst,valueu id,ss str)
 	valueu arg#1;set arg rb_str_new_cstr(str) #https://docs.ruby-lang.org/capi/en/master/d8/d68/include_2ruby_2internal_2intern_2string_8h.html (doxygen,Files,...), no free(arg)
 	call rb_funcall(inst,id,1,arg)
 end
 
 importx "rb_string_value_cstr" rb_string_value_cstr
 
-#ssu
+#ss
 functionx orb_inst_call_varg_str(valueu inst,valueu id,valueu varg)
-	ssu string;set string rb_funcall(inst,id,1,varg)
+	ss string;set string rb_funcall(inst,id,1,varg)
 	callret rb_string_value_cstr(#string) #free(this ret) is not required, and not possible, that's why &string? then value can be new allocated there maybe
 end
